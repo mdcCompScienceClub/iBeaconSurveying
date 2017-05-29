@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.support.v4.content.FileProvider;
@@ -29,13 +28,10 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.os.Handler;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,14 +40,22 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    // Stops scanning after 5 seconds.
-    private static final long SCAN_PERIOD = 5000;
+    // Stops scanning after 10 * 1000 milliseconds.
+    private static final long SCAN_PERIOD = 1000;
+    private static final int NUM_LOGS = 10;
 
     //app state
     private boolean mScanning;
     private Handler mHandler;
     private String X;
     private String Y;
+    private int beacon1RSSI;
+    private int beacon2RSSI;
+    private int beacon3RSSI;
+    private int beacon4RSSI;
+    private int beacon5RSSI;
+    private int beacon6RSSI;
+    private int numLogs;
 
     //UI components
     private Button logButton;
@@ -133,6 +137,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             e.printStackTrace();
         }
 
+        beacon1RSSI = 0;
+        beacon2RSSI = 0;
+        beacon3RSSI = 0;
+        beacon4RSSI = 0;
+        beacon5RSSI = 0;
+        beacon6RSSI = 0;
+
     }
 
     @Override
@@ -158,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ///////////////////////////////////////////////////////////////  UI  methods ///////////////////////////////////////////////////////////////
 
     /**
-     * Called when the user taps the Scan button
+     * Called when the user taps the Log button
      */
     public void log(View view) {
         Log.i(TAG, "LOGGING FOR " + X + ", " + Y);
@@ -166,15 +177,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         logButton.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
 
+        numLogs = 0;
         // Stops scanning after a pre-defined scan period.
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mScanning = false;
-                scanBLEDevice(false);
-                logButton.setText(R.string.start_log_message);
-                logButton.setEnabled(true);
-                progressBar.setVisibility(View.INVISIBLE);
+                numLogs++;
+                if (numLogs < NUM_LOGS){
+                    log();
+                    mHandler.postDelayed(this, SCAN_PERIOD);
+                } else {
+                    mScanning = false;
+                    scanBLEDevice(false);
+                    logButton.setText(R.string.start_log_message);
+                    logButton.setEnabled(true);
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
             }
         }, SCAN_PERIOD);
 
@@ -273,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         iBeacon ib = parseBLERecord(recordBytes);
 
                         if (ib != null) {
-                            log(ib.getUuid(), ib.getMajor(), ib.getMinor(), rssi);
+                            setLog(ib.getUuid(), ib.getMajor(), ib.getMinor(), rssi);
 
                         }
                     }
@@ -298,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                     iBeacon ib = parseBLERecord(scanRecord);
 
                                     if (ib != null) {
-                                       log(ib.getUuid(), ib.getMajor(), ib.getMinor(), rssi);
+                                       setLog(ib.getUuid(), ib.getMajor(), ib.getMinor(), rssi);
 
                                     }
                                 }
@@ -355,12 +373,37 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     /////////////////////////////////////////////////////////////// Utility methods   ///////////////////////////////////////////////////////////////
 
-    private void log(String uuid, int major, int minor, int rssi) {
+    private void setLog(String uuid, int major, int minor, int rssi) {
+        if("B9407F30-F5F8-466E-AFF9-25556B575555".equalsIgnoreCase(uuid)){
+            if (major == 1){
+                if (minor == 1){ //beacon1
+                    beacon1RSSI = rssi;
+                } else if (minor == 2){ //beacon2
+                    beacon2RSSI = rssi;
+                }
+            } else if (major == 2){
+                if (minor == 1){ //beacon3
+                    beacon3RSSI = rssi;
+                } else if (minor == 2){ //beacon4
+                    beacon4RSSI = rssi;
+                }
+            } else if (major == 3){
+                if (minor == 1){ //beacon5
+                    beacon5RSSI = rssi;
+                } else if (minor == 2){ //beacon6
+                    beacon6RSSI = rssi;
+                }
+            }
+        }
+    }
+
+    private void log() {
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(X).append(",").append(Y).append(",")
-                    .append(uuid).append(",").append(major).append(",")
-                    .append(minor).append(",").append(rssi).append('\n');
+                    .append(beacon1RSSI).append(",").append(beacon2RSSI).append(",")
+                    .append(beacon3RSSI).append(",").append(beacon4RSSI).append(",")
+                    .append(beacon5RSSI).append(",").append(beacon6RSSI).append('\n');
 
             outputStream.write(sb.toString().getBytes());
             Log.i(TAG, "LOGGING " + sb.toString());
