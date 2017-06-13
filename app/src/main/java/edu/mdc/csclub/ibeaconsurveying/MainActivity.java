@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String TAG = MainActivity.class.getSimpleName();
     // Stops scanning after 10 * 1000 milliseconds.
     private static final long SCAN_PERIOD = 1000;
-    private static final int NUM_LOGS = 10;
+    private static final int NUM_LOGS = 20;
 
     //app state
     private boolean mScanning;
