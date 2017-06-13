@@ -102,6 +102,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+
         //init Bluetooth objects and permissions
         initBLESetup();
 
