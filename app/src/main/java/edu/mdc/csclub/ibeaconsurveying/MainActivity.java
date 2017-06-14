@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         YSpinner = (Spinner) findViewById(R.id.YSpinner);
         YSpinner.setOnItemSelectedListener(this);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        
+
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 

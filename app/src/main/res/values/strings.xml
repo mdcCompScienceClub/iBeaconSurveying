@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Entec iBeacon Surveying</string>
+    <string name="app_name">iBeacon Scanner and Logger</string>
     <string name="start_log_message">Log</string>
     <string name="logging_message">Logging...</string>
     <string name="send_to">Send to</string>
